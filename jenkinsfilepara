@@ -56,8 +56,7 @@ pipeline {
                         spec: '''{
                             "files":[{
                                 "pattern": "module-a/target/*.jar",
-                                "target": "jfrog-repository",
-                                "props": "${BUILD_VERSION}"
+                                "target": "jfrog-repository"
                             }]
                         }'''
                     )
@@ -68,7 +67,7 @@ pipeline {
         stage('Archiving the Artifact') {
             steps {
                 script {
-                    archiveArtifacts artifacts: "module-a/target/${buildVersion}.jar", followSymlinks: false
+                    archiveArtifacts artifacts: "module-a/target/*.jar", followSymlinks: false
                 }
             }
         }
