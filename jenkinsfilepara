@@ -46,6 +46,45 @@ pipeline {
                     }
                 }
             }
+            post {
+                always {
+                    script {
+                        def qualityGatePassed = false
+                        timeout(time: 1, unit: 'HOURS') {
+                            waitForQualityGate()
+                                .failBuildOnQGFailure(true)
+                                .errorOnQGWarning(true)
+                                .handleTimeout(true)
+                                .script {
+                                    def qg = waitForQualityGate()
+                                    qualityGatePassed = qg.status == 'OK'
+                                    echo "Quality Gate status: ${qg.status}"
+                                    
+                                    // Check if custom quality gate was used
+                                    def customQualityGate = qg.conditions.find { it.metricKey == 'PrimeSquare UI Quality Gate' }
+                                    if (customQualityGate && customQualityGate.status == 'OK') {
+                                        echo "Custom Quality Gate (PrimeSquare UI Quality Gate) Passed"
+                                    } else {
+                                        echo "Default Quality Gate (Sonar Way) Passed"
+                                    }
+                                }
+                        }
+
+                        // Perform additional custom quality gate checks
+                        if (qualityGatePassed) {
+                            // Add your custom quality gate logic here
+                            // You can perform additional checks or criteria
+                            // based on your specific requirements
+                            // For example:
+                            if (someCustomCheck) {
+                                error("Custom quality gate check failed.")
+                            }
+                        } else {
+                            error("Quality Gate check failed.")
+                        }
+                    }
+                }
+            }
         }
 
         stage('Uploading to JFrog Artifactory') {
